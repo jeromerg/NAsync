@@ -1,19 +1,20 @@
-Congratulation, you have succesfully installed *NVisitor*
+Congratulation, you have succesfully installed *NAsync*
 =========================================================
 
-Lightweight Framework to develop modular extendable visitors
+Mimic the async-await syntax with Extension Methods 
+
+Inspired by Stephen Toub's example: 
+
+    http://blogs.msdn.com/b/pfxteam/archive/2010/11/21/10094564.aspx
 
 With NVisitor, you
-- Define visitors for a class family without renouncing to extend the family itself
-- Can pause the visit to process the intermediate result
-- Implement visitors without instrumentalizing the visited class family
+- TODO
 
 Usage
 -----
 
 Look at demo unit tests: 
-    http://github.com/jeromerg/NVisitor/blob/master/src/NVisitorTest/Api/Demo/BatchVisitorDemo.cs
-    http://github.com/jeromerg/NVisitor/blob/master/src/NVisitorTest/Api/Demo/LazyVisitorDemo.cs
+    TODO
 
 
 Links
@@ -21,13 +22,13 @@ Links
 
 - Blog entry: 
 
-    http://jeromerg.github.io/blog/2015/01/06/nvisitor-released/
+    TODO
 
 - GitHub repository: 
 
-    http://github.com/jeromerg/NVisitor](http://github.com/jeromerg/NVisitor
+    http://github.com/jeromerg/NAsync](http://github.com/jeromerg/NAsync
 
 - NuGet home page: 
 
-    http://www.nuget.org/packages/NVisitor
+    TODO
 
