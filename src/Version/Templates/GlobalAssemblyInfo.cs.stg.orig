@@ -1,0 +1,20 @@
+﻿MainTemplate(m) ::= <<
+
+<<<<<<< HEAD
+using System.Reflection;
+=======
+	using System.Reflection;
+>>>>>>> 5b367e8563679899b51f8ece834efee3fa6c9405
+
+[assembly:AssemblyCompany                ("<m.Company>")]
+[assembly:AssemblyProduct                ("<m.Product>")]
+[assembly:AssemblyCopyright              ("<m.Copyright>")]
+[assembly:AssemblyTrademark              ("")]
+[assembly:AssemblyCulture                ("")]
+[assembly:AssemblyConfiguration          ("<m.BuildConfig>")]
+
+[assembly:AssemblyVersion                ("<m.Major>.<m.Minor>.<m.Build>.<m.Revision>")]
+[assembly:AssemblyFileVersion            ("<m.Major>.<m.Minor>.<m.Build>.<m.Revision>")]
+[assembly:AssemblyInformationalVersion   ("<m.Major>.<m.Minor>.<m.Build>.<m.Revision>, Hash <m.ShortHash>, BuildConfig <m.BuildConfig>, HasLocalChange <m.HasLocalChange>")]
+
+>>

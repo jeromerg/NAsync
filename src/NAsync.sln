@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NAsync", "NAsync\NAsync.csproj", "{F3DC5FB8-BCFF-4D8A-BE76-E95758CB6E33}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NGitVersion", "Version\NGitVersion.csproj", "{BADB59FB-1A14-42AF-B314-152C4787F437}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F3DC5FB8-BCFF-4D8A-BE76-E95758CB6E33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F3DC5FB8-BCFF-4D8A-BE76-E95758CB6E33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F3DC5FB8-BCFF-4D8A-BE76-E95758CB6E33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F3DC5FB8-BCFF-4D8A-BE76-E95758CB6E33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BADB59FB-1A14-42AF-B314-152C4787F437}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BADB59FB-1A14-42AF-B314-152C4787F437}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BADB59FB-1A14-42AF-B314-152C4787F437}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BADB59FB-1A14-42AF-B314-152C4787F437}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
