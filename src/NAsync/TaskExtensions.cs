@@ -9,7 +9,7 @@ namespace NAsync
     /// </summary>
     public static class TaskExtensions
     {
-        #region Then extensions without cancellation Token
+        #region Then extensions with following action/function
 
         public static Task Then(this Task first, Action next, TaskScheduler taskScheduler = null)
         {
@@ -35,7 +35,7 @@ namespace NAsync
             return tcs.Task;
         }
 
-        public static Task Then(this Task first, Func<Task> next, TaskScheduler taskScheduler = null)
+        public static Task Then(this Task first, Action next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
@@ -50,16 +50,8 @@ namespace NAsync
                 {
                     try
                     {
-                        var t = next();
-                        if (t == null) tcs.TrySetCanceled();
-                        else t.ContinueWith(delegate
-                        {
-                            // ReSharper disable PossibleNullReferenceException
-                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
-                            // ReSharper restore PossibleNullReferenceException
-                            else if (t.IsCanceled) tcs.TrySetCanceled();
-                            else tcs.TrySetResult(null);
-                        }, taskScheduler ?? TaskScheduler.Default);
+                        next();
+                        tcs.SetResult(null);
                     }
                     catch (Exception exc) { tcs.TrySetException(exc); }
                 }
@@ -91,7 +83,7 @@ namespace NAsync
             return tcs.Task;
         }
 
-        public static Task Then<T1>(this Task<T1> first, Func<T1, Task> next, TaskScheduler taskScheduler = null)
+        public static Task Then<T1>(this Task<T1> first, Action<T1> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
@@ -106,16 +98,8 @@ namespace NAsync
                 {
                     try
                     {
-                        var t = next(first.Result);
-                        if (t == null) tcs.TrySetCanceled();
-                        else t.ContinueWith(delegate
-                        {
-                            // ReSharper disable PossibleNullReferenceException
-                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
-                            // ReSharper restore PossibleNullReferenceException
-                            else if (t.IsCanceled) tcs.TrySetCanceled();
-                            else tcs.TrySetResult(null);
-                        }, taskScheduler ?? TaskScheduler.Default);
+                        next(first.Result);
+                        tcs.TrySetResult(null);
                     }
                     catch (Exception exc) { tcs.TrySetException(exc); }
                 }
@@ -138,8 +122,212 @@ namespace NAsync
                 {
                     try
                     {
-                        var t = next();
+                        T2 t = next();
                         tcs.TrySetResult(t);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        public static Task<T2> Then<T2>(this Task first, Func<T2> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<T2>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        T2 t = next();
+                        tcs.TrySetResult(t);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        public static Task<T2> Then<T1, T2>(this Task<T1> first, Func<T1, T2> next, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<T2>();
+            first.ContinueWith(delegate
+            {                
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        T2 t = next(first.Result);
+                        tcs.TrySetResult(t);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        public static Task<T2> Then<T1, T2>(this Task<T1> first, Func<T1, T2> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<T2>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        T2 t = next(first.Result);
+                        tcs.TrySetResult(t);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        #endregion
+
+        #region Then extensions with following Task (unwrapping the inner Task)
+
+        public static Task Then(this Task first, Func<Task> next, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<object>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        Task t = next();
+                        if (t == null) tcs.TrySetCanceled();
+                        else t.ContinueWith(delegate
+                        {
+                            // ReSharper disable PossibleNullReferenceException
+                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
+                            else if (t.IsCanceled) tcs.TrySetCanceled();
+                            else tcs.TrySetResult(null);
+                        }, taskScheduler ?? TaskScheduler.Default);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        public static Task Then(this Task first, Func<Task> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<object>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        Task t = next();
+                        if (t == null) tcs.TrySetCanceled();
+                        else t.ContinueWith(delegate
+                        {                            
+                            // ReSharper disable PossibleNullReferenceException
+                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
+                            else if (t.IsCanceled) tcs.TrySetCanceled();
+                            else tcs.TrySetResult(null);
+                        }, taskScheduler ?? TaskScheduler.Default);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        public static Task Then<T1>(this Task<T1> first, Func<T1, Task> next, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<object>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        Task t = next(first.Result);
+                        if (t == null) tcs.TrySetCanceled();
+                        else t.ContinueWith(delegate
+                        {
+                            // ReSharper disable PossibleNullReferenceException
+                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
+                            else if (t.IsCanceled) tcs.TrySetCanceled();
+                            else tcs.TrySetResult(null);
+                        }, taskScheduler ?? TaskScheduler.Default);
+                    }
+                    catch (Exception exc) { tcs.TrySetException(exc); }
+                }
+            }, taskScheduler ?? TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        public static Task Then<T1>(this Task<T1> first, Func<T1, Task> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+
+            var tcs = new TaskCompletionSource<object>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled) tcs.TrySetCanceled();
+                else
+                {
+                    try
+                    {
+                        Task t = next(first.Result);
+                        if (t == null) tcs.TrySetCanceled();
+                        else t.ContinueWith(delegate
+                        {
+                            // ReSharper disable PossibleNullReferenceException
+                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
+                            else if (t.IsCanceled) tcs.TrySetCanceled();
+                            else tcs.TrySetResult(null);
+                        }, taskScheduler ?? TaskScheduler.Default);
                     }
                     catch (Exception exc) { tcs.TrySetException(exc); }
                 }
@@ -179,14 +367,14 @@ namespace NAsync
             return tcs.Task;
         }
 
-        public static Task<T2> Then<T1, T2>(this Task<T1> first, Func<T1, T2> next, TaskScheduler taskScheduler = null)
+        public static Task<T2> Then<T2>(this Task first, Func<Task<T2>> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
 
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
-            {                
+            {
                 // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
@@ -194,8 +382,16 @@ namespace NAsync
                 {
                     try
                     {
-                        var t = next(first.Result);
-                        tcs.TrySetResult(t);
+                        Task<T2> t = next();
+                        if (t == null) tcs.TrySetCanceled();
+                        else t.ContinueWith(delegate
+                        {
+                            // ReSharper disable PossibleNullReferenceException
+                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
+                            else if (t.IsCanceled) tcs.TrySetCanceled();
+                            else tcs.TrySetResult(t.Result);
+                        }, taskScheduler ?? TaskScheduler.Default);
                     }
                     catch (Exception exc) { tcs.TrySetException(exc); }
                 }
@@ -235,11 +431,7 @@ namespace NAsync
             return tcs.Task;
         }
 
-        #endregion
-
-        #region Then extensions WITH cancellation Token
-
-        public static Task<T2> Then<T1, T2>(this Task<T1> first, Func<T1, CancellationToken, Task<T2>> next, CancellationToken token, TaskScheduler taskScheduler = null)
+        public static Task<T2> Then<T1, T2>(this Task<T1> first, Func<T1, Task<T2>> next, CancellationToken cancellationToken, TaskScheduler taskScheduler = null)
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
@@ -254,7 +446,7 @@ namespace NAsync
                 {
                     try
                     {
-                        Task<T2> t = next(first.Result, token);
+                        Task<T2> t = next(first.Result);
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
@@ -271,197 +463,6 @@ namespace NAsync
             return tcs.Task;
         }
 
-        public static Task Then(this Task first, Action<CancellationToken> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<object>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        next(token);
-                        tcs.SetResult(null);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
-
-        public static Task Then(this Task first, Func<CancellationToken, Task> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<object>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        var t = next(token);
-                        if (t == null) tcs.TrySetCanceled();
-                        else t.ContinueWith(delegate
-                        {                            
-                            // ReSharper disable PossibleNullReferenceException
-                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
-                            // ReSharper restore PossibleNullReferenceException
-                            else if (t.IsCanceled) tcs.TrySetCanceled();
-                            else tcs.TrySetResult(null);
-                        }, taskScheduler ?? TaskScheduler.Default);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
-
-        public static Task<T2> Then<T2>(this Task first, Func<CancellationToken, T2> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<T2>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        var t = next(token);
-                        tcs.TrySetResult(t);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
-
-        public static Task<T2> Then<T2>(this Task first, Func<CancellationToken, Task<T2>> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<T2>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        Task<T2> t = next(token);
-                        if (t == null) tcs.TrySetCanceled();
-                        else t.ContinueWith(delegate
-                        {
-                            // ReSharper disable PossibleNullReferenceException
-                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
-                            // ReSharper restore PossibleNullReferenceException
-                            else if (t.IsCanceled) tcs.TrySetCanceled();
-                            else tcs.TrySetResult(t.Result);
-                        }, taskScheduler ?? TaskScheduler.Default);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
-
-        public static Task Then<T1>(this Task<T1> first, Action<T1, CancellationToken> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<object>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        next(first.Result, token);
-                        tcs.TrySetResult(null);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
-
-        public static Task Then<T1>(this Task<T1> first, Func<T1, CancellationToken, Task> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<object>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        var t = next(first.Result, token);
-                        if (t == null) tcs.TrySetCanceled();
-                        else t.ContinueWith(delegate
-                        {
-                            // ReSharper disable PossibleNullReferenceException
-                            if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
-                            // ReSharper restore PossibleNullReferenceException
-                            else if (t.IsCanceled) tcs.TrySetCanceled();
-                            else tcs.TrySetResult(null);
-                        }, taskScheduler ?? TaskScheduler.Default);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
-
-        public static Task<T2> Then<T1, T2>(this Task<T1> first, Func<T1, CancellationToken, T2> next, CancellationToken token, TaskScheduler taskScheduler = null)
-        {
-            if (first == null) throw new ArgumentNullException("first");
-            if (next == null) throw new ArgumentNullException("next");
-
-            var tcs = new TaskCompletionSource<T2>();
-            first.ContinueWith(delegate
-            {
-                // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
-                else if (first.IsCanceled) tcs.TrySetCanceled();
-                else
-                {
-                    try
-                    {
-                        var t = next(first.Result, token);
-                        tcs.TrySetResult(t);
-                    }
-                    catch (Exception exc) { tcs.TrySetException(exc); }
-                }
-            }, taskScheduler ?? TaskScheduler.Default);
-            return tcs.Task;
-        }
         #endregion
 
         #region Catch
