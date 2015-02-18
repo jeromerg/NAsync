@@ -19,6 +19,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -42,6 +43,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -52,7 +54,9 @@ namespace NAsync
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(null);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -71,6 +75,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -94,6 +99,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -104,7 +110,9 @@ namespace NAsync
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(null);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -123,6 +131,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -146,17 +155,20 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
                     try
                     {
-                        var t = next();
+                        Task<T2> t = next();
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(t.Result);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -174,7 +186,8 @@ namespace NAsync
 
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
-            {
+            {                
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -198,17 +211,20 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
                     try
                     {
-                        var t = next(first.Result);
+                        Task<T2> t = next(first.Result);
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(t.Result);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -231,17 +247,20 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
                     try
                     {
-                        var t = next(first.Result, token);
+                        Task<T2> t = next(first.Result, token);
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(t.Result);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -260,6 +279,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -283,6 +303,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -292,8 +313,10 @@ namespace NAsync
                         var t = next(token);
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
-                        {
+                        {                            
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(null);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -312,6 +335,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -335,17 +359,20 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
                     try
                     {
-                        var t = next(token);
+                        Task<T2> t = next(token);
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(t.Result);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -364,6 +391,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -387,6 +415,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -397,7 +426,9 @@ namespace NAsync
                         if (t == null) tcs.TrySetCanceled();
                         else t.ContinueWith(delegate
                         {
+                            // ReSharper disable PossibleNullReferenceException
                             if (t.IsFaulted) tcs.TrySetException(t.Exception.InnerExceptions);
+                            // ReSharper restore PossibleNullReferenceException
                             else if (t.IsCanceled) tcs.TrySetCanceled();
                             else tcs.TrySetResult(null);
                         }, taskScheduler ?? TaskScheduler.Default);
@@ -416,6 +447,7 @@ namespace NAsync
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                // ReSharper disable once PossibleNullReferenceException
                 if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
@@ -447,7 +479,10 @@ namespace NAsync
                 {
                     var concernedException = first.Exception as TException;
                     if (concernedException == null)
-                        tcs.TrySetException(first.Exception.InnerExceptions); // not concerned -> forward
+                    {
+                        // ReSharper disable once PossibleNullReferenceException
+                        tcs.TrySetException(first.Exception.InnerExceptions); // not concerned -> forward   
+                    }
                     else
                     {
                         // handle the exception
@@ -481,7 +516,10 @@ namespace NAsync
                 {
                     var concernedException = first.Exception as TException;
                     if (concernedException == null)
+                    {
+                        // ReSharper disable once PossibleNullReferenceException
                         tcs.TrySetException(first.Exception.InnerExceptions); // not concerned -> forward
+                    }                   
                     else
                     {
                         // handle the exception
@@ -527,6 +565,7 @@ namespace NAsync
 
                 // then forward
                 if (localException != null) tcs.TrySetException(localException);
+                // ReSharper disable once PossibleNullReferenceException
                 else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else tcs.TrySetResult(null);
@@ -556,6 +595,7 @@ namespace NAsync
 
                 // then forward
                 if (localException != null) tcs.TrySetException(localException);
+                // ReSharper disable once PossibleNullReferenceException
                 else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else tcs.TrySetResult(first.Result);
