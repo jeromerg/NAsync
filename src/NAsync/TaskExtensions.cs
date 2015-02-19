@@ -381,6 +381,27 @@ namespace NAsync
 
         #region Catch
 
+        /// <summary>
+        /// Catches any Exception of type TException bubbling up from the Task and allow the user to filter out the exception. Be aware that successive .Catch&lt;Ex>() corresponds 
+        /// to the following synchronous syntax:
+        /// <example>
+        ///  try
+        ///  {
+        ///      try
+        ///      {
+        ///          // SYNC TASK
+        ///      }
+        ///      catch (Ex1 e)
+        ///      {
+        ///          // FIRST CATCH BLOCK
+        ///      }
+        ///  }
+        ///  catch (Ex2 e)
+        ///  {
+        ///      // SECOND CATCH, MAY CATCH THROWN EXCEPTION BY FIRST CATCH BLOCK
+        ///  }
+        /// </example>
+        /// </summary>
         [NotNull]
         public static Task Catch<TException>([NotNull] this Task first,
             [NotNull] Action<TException> next,
@@ -395,7 +416,8 @@ namespace NAsync
             {
                 if (first.IsFaulted)
                 {
-                    var concernedException = first.Exception as TException;
+                    // ReSharper disable once PossibleNullReferenceException
+                    var concernedException = first.Exception.InnerException as TException;
                     if (concernedException == null)
                     {
                         // ReSharper disable once PossibleNullReferenceException
@@ -407,6 +429,7 @@ namespace NAsync
                         try
                         {
                             next(concernedException);
+                            tcs.SetResult(null);
                         }
                         catch (Exception e)
                         {
@@ -435,7 +458,8 @@ namespace NAsync
             {
                 if (first.IsFaulted)
                 {
-                    var concernedException = first.Exception as TException;
+                    // ReSharper disable once PossibleNullReferenceException
+                    var concernedException = first.Exception.InnerException as TException;
                     if (concernedException == null)
                     {
                         // ReSharper disable once PossibleNullReferenceException
@@ -446,7 +470,8 @@ namespace NAsync
                         // handle the exception
                         try
                         {
-                            next(concernedException);
+                            T1 result = next(concernedException);
+                            tcs.SetResult(result);
                         }
                         catch (Exception e)
                         {
@@ -500,7 +525,7 @@ namespace NAsync
 
         [NotNull]
         public static Task<T1> Finally<T1>([NotNull] this Task<T1> first,
-            [NotNull] Action<T1> next,
+            [NotNull] Action next,
             [CanBeNull] TaskScheduler taskScheduler = null)
         {
             if (first == null) throw new ArgumentNullException("first");
@@ -513,7 +538,7 @@ namespace NAsync
                 Exception localException = null;
                 try
                 {
-                    next(first.Result);
+                    next();
                 }
                 catch (Exception e)
                 {
