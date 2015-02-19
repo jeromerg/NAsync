@@ -1,9 +1,6 @@
 ﻿        // TODO TEST : 
-        // - FOR TASK-UNWRAPPING OVERLOADS OF THEN
+        // - MISSING TEST FOR CANCELLATION WITHIN THEN CALLBACK / TASK
         // - WITH SPECIFIC SCHEDULER   (moq-able?)
-        // - WITH CANCELLATION TOKEN
-        // - CATCH with nested/stacked tasks where exception bubbles up the stack (ensures that AggregateException.InnerException is correctly unwrapped)
-        // - MULTIPLE FINALLY 
 
         // TODO DEV
         // - MISSING MUTUALLY EXCLUSIVE CATCH: OrCatch<TException>(...)

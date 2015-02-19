@@ -382,7 +382,10 @@ namespace NAsync
         #region Catch
 
         /// <summary>
-        /// Catches any Exception of type TException bubbling up from the Task and allow the user to filter out the exception. Be aware that successive .Catch&lt;Ex>() corresponds 
+        /// Catches any Exception of type TException bubbling up from the Task and allow the user to filter out the exception.
+        /// Remark: You cannot filter the OperationCanceledException thrown on task cancellation, if the the first Task has been built with the token (i.e. by calling Then(second, token)).
+        /// 
+        /// Be aware that successive .Catch&lt;Ex>() corresponds 
         /// to the following synchronous syntax:
         /// <example>
         ///  try

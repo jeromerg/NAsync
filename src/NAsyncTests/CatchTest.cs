@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NAsync;
@@ -15,6 +16,25 @@ namespace NAsyncTests
     public class CatchTest
     {
         #region Util
+
+        public class Syncer
+        {
+            private int mCounter;
+
+            public void Step(int step)
+            {
+                while (true)
+                {
+                    int expectedPreviousStep = step - 1;
+                    int previousStep = Interlocked.CompareExchange(ref mCounter, step, expectedPreviousStep);
+                    if (expectedPreviousStep == previousStep)
+                        return;
+
+                    Thread.Sleep(10);
+                }
+
+            }
+        }
 
         public class Ex1 : Exception
         {
@@ -181,6 +201,79 @@ namespace NAsyncTests
             Assert.Pass();
         }
 
+        [Test]
+        public void Task_CatchSpecificException__FirstCancelled()
+        {
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+
+            Task task = SimpleTaskFactory
+                .Run(() =>
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                }, token)
+                .Catch<Ex1>(exception => mock.Object.CatchExceptionHandler(exception));
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.CatchExceptionHandler(It.IsAny<Exception>()), Times.Never);
+                Assert.Pass();
+            }
+
+        }
+
+        [Test]
+        public void Task_CatchAllException__FirstCancelled()
+        {
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+
+            Task task = SimpleTaskFactory
+                .Run(() =>
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                }, token)
+                .Catch<Exception>(exception => mock.Object.CatchExceptionHandler(exception));
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                // REMARK!!! The Catch doesn't cancel the OperationCanceledException!
+                mock.Verify(then => then.CatchExceptionHandlerWithOutput(It.IsAny<Exception>()), Times.Never);
+                Assert.Pass();
+            }
+        }
+
+
         #endregion
 
         #region Catch on TaskT
@@ -339,6 +432,81 @@ namespace NAsyncTests
             Assert.Pass();
         }
 
+        [Test]
+        public void TaskT_CatchSpecificException__FirstCancelled()
+        {
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+
+            Task<int> task = SimpleTaskFactory
+                .Run(() =>
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    return 12; // T
+                }, token)
+                .Catch<int, Ex1>(exception => mock.Object.CatchExceptionHandlerWithOutput(exception));
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.CatchExceptionHandlerWithOutput(It.IsAny<Exception>()), Times.Never);
+                Assert.Pass();
+            }
+
+        }
+
+        [Test]
+        public void TaskT_CatchAllException__FirstCancelled()
+        {
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+
+            Task<int> task = SimpleTaskFactory
+                .Run(() =>
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    return 12; // T
+                }, token)
+                .Catch<int, Exception>(exception => mock.Object.CatchExceptionHandlerWithOutput(exception));
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                // REMARK!!! The Catch doesn't cancel the OperationCanceledException!
+                mock.Verify(then => then.CatchExceptionHandlerWithOutput(It.IsAny<Exception>()), Times.Never);
+                Assert.Pass();
+            }
+
+
+        }
 
         #endregion
 
