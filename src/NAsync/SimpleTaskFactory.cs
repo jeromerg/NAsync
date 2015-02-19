@@ -44,7 +44,7 @@ namespace NAsync
         [NotNull]
         public static Task Run([NotNull] Action action, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(action, cancellationToken);
+            return Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.None, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace NAsync
         [NotNull]
         public static Task<T> Run<T>([NotNull] Func<T> function, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(function, cancellationToken);
+            return Task.Factory.StartNew(function, cancellationToken, TaskCreationOptions.None, TaskScheduler.Default);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace NAsync
         [NotNull]
         public static Task Run([NotNull] Func<Task> function, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(function, cancellationToken).Unwrap();
+            return Task.Factory.StartNew(function, cancellationToken, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
         }
 
         /// <summary>
@@ -146,7 +146,7 @@ namespace NAsync
         [NotNull]
         public static Task<TResult> Run<TResult>([NotNull] Func<Task<TResult>> function, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(function, CancellationToken.None).Unwrap();
+            return Task.Factory.StartNew(function, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default).Unwrap();
         }
     }
 }
