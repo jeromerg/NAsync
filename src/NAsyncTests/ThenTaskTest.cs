@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Moq;
 using NAsync;
 using NUnit.Framework;
-using TaskExtensions = NAsync.TaskExtensions;
+
 #pragma warning disable 162
 
 namespace NAsyncTests
@@ -59,6 +59,24 @@ namespace NAsyncTests
         #endregion
 
         #region Then: Task then Task Action
+
+        [Test]
+        public void Task_Then_TaskAction__NullTask()
+        {
+            Task task = SimpleTaskFactory.Run(() => { /*do nothing*/})
+                .Then(() => (Task)null);
+
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<ArgumentNullException>(e.InnerException);
+            }
+
+        }
+
         [Test]
         public void Task_Then_TaskAction__Normal()
         {
@@ -121,7 +139,7 @@ namespace NAsyncTests
         public void Task_Then_Action__Cancelled()
         {
             var source = new CancellationTokenSource();
-            var token = source.Token;
+            CancellationToken token = source.Token;
             
             var syncer = new Syncer();
 
@@ -132,7 +150,7 @@ namespace NAsyncTests
                     syncer.Step(4);
                     token.ThrowIfCancellationRequested();
                 }, token)
-                .Then(() => SimpleTaskFactory.Run(() => mock.Object.NextAction(), token));
+                .Then(() => SimpleTaskFactory.Run(() => mock.Object.NextAction(), token), token);
 
             syncer.Step(2); 
             source.Cancel();
@@ -140,6 +158,7 @@ namespace NAsyncTests
 
             try
             {
+                // ReSharper disable once MethodSupportsCancellation
                 task.Wait();
                 Assert.Fail("task must bubble up the TaskCanceledException");
             }
@@ -151,9 +170,65 @@ namespace NAsyncTests
             }
         }
 
+        [Test]
+        public void Task_Then_Action__SecondCancelled()
+        {
+            var source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+            
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+            Task task = SimpleTaskFactory.Run(() =>
+                {
+                    // do nothing
+                }, token)
+                .Then(() => SimpleTaskFactory.Run(() => 
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    mock.Object.NextAction();
+                }, token), token);
+
+            syncer.Step(2); 
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                // ReSharper disable once MethodSupportsCancellation
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.NextAction(), Times.Never);
+                Assert.Pass();
+            }
+        }
+
         #endregion
 
         #region Then: Task then Task FuncT2
+        [Test]
+        public void Task_Then_TaskFuncT2__NullTask()
+        {
+            Task task = SimpleTaskFactory.Run(() => { /*do nothing*/})
+                .Then(() => (Task<string>)null);
+
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<ArgumentNullException>(e.InnerException);
+            }
+
+        }
+
         [Test]
         public void Task_Then_TaskFuncT2__Normal()
         {
@@ -177,7 +252,7 @@ namespace NAsyncTests
         }
 
         [Test]
-        public void Task_Then_TaskFuncT2__Exception()
+        public void Task_Then_TaskFuncT2__ExceptionInFirst()
         {
             var mock = new Mock<IAfter>();
             var thrownException = new Exception();
@@ -186,9 +261,8 @@ namespace NAsyncTests
                 .Run(() => 
                 {
                     throw thrownException;
-                    return 12;
                 })
-                .Then(result => SimpleTaskFactory.Run(() => mock.Object.NextFunction()));
+                .Then( () => SimpleTaskFactory.Run(() => mock.Object.NextFunction()));
 
             try
             {
@@ -204,10 +278,65 @@ namespace NAsyncTests
         }
 
         [Test]
+        public void Task_Then_TaskFuncT2__ExceptionInSecond()
+        {
+            var thrownException = new Exception();
+            Task task = SimpleTaskFactory.Run(() => { })
+                .Then(() =>
+                    SimpleTaskFactory.Run(() =>
+                    {
+                        throw thrownException;
+                        return default(string);
+                    }));
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the exception");
+            }
+            catch (AggregateException e)
+            {
+                Assert.AreEqual(thrownException, e.InnerException);
+                Assert.Pass();
+            }
+
+        }
+
+
+        [Test]
+        public void Task_Then_TaskFuncT2__ExceptionInFatory()
+        {
+            var thrownException = new Exception();
+            Task task = SimpleTaskFactory.Run(() => { })
+                .Then(() =>
+                {
+                    throw thrownException; // factory fails
+                    return SimpleTaskFactory.Run(() =>
+                    {
+                        throw thrownException;
+                        return default(string);
+                    });
+                });
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the exception");
+            }
+            catch (AggregateException e)
+            {
+                Assert.AreEqual(thrownException, e.InnerException);
+                Assert.Pass();
+            }
+
+        }
+
+
+        [Test]
         public void Task_Then_FuncT2__Cancelled()
         {
             var source = new CancellationTokenSource();
-            var token = source.Token;
+            CancellationToken token = source.Token;
 
             var syncer = new Syncer();
 
@@ -218,7 +347,7 @@ namespace NAsyncTests
                 syncer.Step(4);
                 token.ThrowIfCancellationRequested();
             }, token)
-                .Then(() => SimpleTaskFactory.Run(() => mock.Object.NextFunction(), token));
+                .Then(() => SimpleTaskFactory.Run(() => mock.Object.NextFunction(), token), token);
 
             syncer.Step(2);
             source.Cancel();
@@ -226,6 +355,7 @@ namespace NAsyncTests
 
             try
             {
+                // ReSharper disable once MethodSupportsCancellation
                 task.Wait();
                 Assert.Fail("task must bubble up the TaskCanceledException");
             }
@@ -237,9 +367,66 @@ namespace NAsyncTests
             }
         }
 
+        [Test]
+        public void Task_Then_FuncT2__SecondCancelled()
+        {
+            var source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+            Task task = SimpleTaskFactory.Run(() =>
+            {
+                // do nothing
+            }, token)
+                .Then(() => SimpleTaskFactory.Run(() => 
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    return mock.Object.NextFunction();
+                }, token), token);
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                // ReSharper disable once MethodSupportsCancellation
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.NextFunction(), Times.Never);
+                Assert.Pass();
+            }
+        }
+
+
         #endregion
 
         #region Then: TaskT1 then Task ActionT1
+        [Test]
+        public void TaskT1_Then_TaskActionT1__NullTask()
+        {
+            Task task = SimpleTaskFactory.Run(() => 12)
+                .Then(result => (Task)null);
+
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<ArgumentNullException>(e.InnerException);
+            }
+
+        }
+
         [Test]
         public void TaskT1_Then_TaskActionT1__Normal()
         {
@@ -306,10 +493,39 @@ namespace NAsyncTests
         }
 
         [Test]
+        public void TaskT1_Then_TaskActionT1__ExceptionInFatory()
+        {
+            var thrownException = new Exception();
+            Task task = SimpleTaskFactory.Run(() => 12)
+                .Then(result =>
+                {
+                    throw thrownException; // factory fails
+                    return SimpleTaskFactory.Run(() =>
+                    {
+                        throw thrownException;
+                        return default(string);
+                    });
+                });
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the exception");
+            }
+            catch (AggregateException e)
+            {
+                Assert.AreEqual(thrownException, e.InnerException);
+                Assert.Pass();
+            }
+
+        }
+
+
+        [Test]
         public void Task_Then_ActionT1__Cancelled()
         {
             var source = new CancellationTokenSource();
-            var token = source.Token;
+            CancellationToken token = source.Token;
 
             var syncer = new Syncer();
 
@@ -321,7 +537,7 @@ namespace NAsyncTests
                 token.ThrowIfCancellationRequested();
                 return 10;
             }, token)
-                .Then(result => SimpleTaskFactory.Run(() => mock.Object.NextActionWithInput(result), token));
+                .Then(result => SimpleTaskFactory.Run(() => mock.Object.NextActionWithInput(result), token), token);
 
             syncer.Step(2);
             source.Cancel();
@@ -329,6 +545,7 @@ namespace NAsyncTests
 
             try
             {
+                // ReSharper disable once MethodSupportsCancellation
                 task.Wait();
                 Assert.Fail("task must bubble up the TaskCanceledException");
             }
@@ -340,9 +557,64 @@ namespace NAsyncTests
             }
         }
 
+
+        [Test]
+        public void TaskT1_Then_ActionT1__SecondCancelled()
+        {
+            var source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+            Task task = SimpleTaskFactory.Run(() => 12, token)
+                .Then(result => SimpleTaskFactory.Run(() => 
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    mock.Object.NextActionWithInput(result);
+                }, token), token);
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                // ReSharper disable once MethodSupportsCancellation
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.NextFunction(), Times.Never);
+                Assert.Pass();
+            }
+        }
+
         #endregion
 
         #region Then: TaskT1 then Task FuncT1T2
+        [Test]
+        public void TaskT1_Then_TaskFuncT1T2__NullTask()
+        {
+            Task task = SimpleTaskFactory.Run(() => 12)
+                .Then(result => (Task<string>)null);
+
+            try
+            {
+                task.Wait();
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<ArgumentNullException>(e.InnerException);
+            }
+
+        }
+
+
         [Test]
         public void TaskT1_Then_TaskFuncT1T2__Normal()
         {
@@ -392,6 +664,7 @@ namespace NAsyncTests
                 .Then(result => SimpleTaskFactory.Run(() => 
                 {
                     throw thrownException;
+                    return default(string);
                 }));
 
             try
@@ -410,7 +683,7 @@ namespace NAsyncTests
         public void Task_Then_FuncT1T2__Cancelled()
         {
             var source = new CancellationTokenSource();
-            var token = source.Token;
+            CancellationToken token = source.Token;
 
             var syncer = new Syncer();
 
@@ -422,7 +695,7 @@ namespace NAsyncTests
                 token.ThrowIfCancellationRequested();
                 return 10;
             }, token)
-                .Then(result => SimpleTaskFactory.Run(() => mock.Object.NextFunctionWithInput(result), token));
+                .Then(result => SimpleTaskFactory.Run(() => mock.Object.NextFunctionWithInput(result), token), token);
 
             syncer.Step(2);
             source.Cancel();
@@ -430,6 +703,7 @@ namespace NAsyncTests
 
             try
             {
+                // ReSharper disable once MethodSupportsCancellation
                 task.Wait();
                 Assert.Fail("task must bubble up the TaskCanceledException");
             }
@@ -440,6 +714,43 @@ namespace NAsyncTests
                 Assert.Pass();
             }
         }
+
+        [Test]
+        public void TaskT1_Then_FuncT1T2__SecondCancelled()
+        {
+            var source = new CancellationTokenSource();
+            CancellationToken token = source.Token;
+
+            var syncer = new Syncer();
+
+            var mock = new Mock<IAfter>();
+            Task task = SimpleTaskFactory.Run(() => 12, token)
+                .Then(result => SimpleTaskFactory.Run(() => 
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    return mock.Object.NextFunctionWithInput(result);
+                }, token), token);
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                // ReSharper disable once MethodSupportsCancellation
+                task.Wait();
+                Assert.Fail("task must bubble up the TaskCanceledException");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.NextFunctionWithInput(It.IsAny<int>()), Times.Never);
+                Assert.Pass();
+            }
+        }
+
 
         #endregion
     }

@@ -1,6 +1,5 @@
-﻿        // TODO TEST : 
-        // - MISSING TEST FOR CANCELLATION WITHIN THEN CALLBACK / TASK
-        // - WITH SPECIFIC SCHEDULER   (moq-able?)
+﻿// TODO TEST : 
+// - WITH SPECIFIC SCHEDULER   (moq-able?)
 
-        // TODO DEV
-        // - MISSING MUTUALLY EXCLUSIVE CATCH: OrCatch<TException>(...)
+// TODO DEV
+// - MISSING MUTUALLY EXCLUSIVE CATCH: OrCatch<TException>(...)

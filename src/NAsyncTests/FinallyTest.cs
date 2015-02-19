@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NAsync;
@@ -49,6 +50,42 @@ namespace NAsyncTests
             task.Wait();
 
             mock.Verify(then => then.NextAction(), Times.Once);
+        }
+
+        [Test]
+        public void Task_Finally_Action__CancelledByFirst()
+        {
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var syncer = new CatchTest.Syncer();
+
+            var mock = new Mock<IAfter>();
+
+            Task task = SimpleTaskFactory
+                .Run(() =>
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                }, token)
+                .Finally(() => mock.Object.NextAction());
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the exception");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.NextAction(), Times.Once);
+                Assert.Pass();
+            }
+
         }
 
         [Test]
@@ -132,6 +169,44 @@ namespace NAsyncTests
 
             mock.Verify(then => then.NextAction(), Times.Once);
         }
+
+        [Test]
+        public void TaskT_Finally_Action__CancelledByFirst()
+        {
+            var source = new CancellationTokenSource();
+            var token = source.Token;
+            var syncer = new CatchTest.Syncer();
+
+            var mock = new Mock<IAfter>();
+
+            Task<int> task = SimpleTaskFactory
+                .Run(() =>
+                {
+                    syncer.Step(1);
+                    syncer.Step(4);
+                    token.ThrowIfCancellationRequested();
+                    return 12;
+                }, token)
+                .Finally(() => mock.Object.NextAction());
+
+            syncer.Step(2);
+            source.Cancel();
+            syncer.Step(3);
+
+            try
+            {
+                task.Wait();
+                Assert.Fail("task must bubble up the exception");
+            }
+            catch (AggregateException e)
+            {
+                Assert.IsInstanceOf<OperationCanceledException>(e.InnerException);
+                mock.Verify(then => then.NextAction(), Times.Once);
+                Assert.Pass();
+            }
+
+        }
+
 
         [Test]
         public void TaskT_Finally_Action__ExceptionInFirst()

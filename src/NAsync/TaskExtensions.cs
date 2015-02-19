@@ -205,7 +205,7 @@ namespace NAsync
                     try
                     {
                         Task t = next();
-                        if (t == null) tcs.TrySetCanceled();
+                        if (t == null) tcs.TrySetException(new ArgumentNullException("next", "Then(Func<Task> nextTask) returned null. Not allowed"));
                         else
                             t.ContinueWith(delegate
                             {
@@ -235,6 +235,9 @@ namespace NAsync
             return Then(first, next, CancellationToken.None, taskScheduler);
         }
 
+        /// <summary>
+        /// Remark: Bubble up a ArgumentNullException If next() returned null.
+        /// </summary>
         [NotNull]
         public static Task Then<T1>([NotNull] this Task<T1> first,
             [NotNull] Func<T1, Task> next,
@@ -255,7 +258,7 @@ namespace NAsync
                     try
                     {
                         Task t = next(first.Result);
-                        if (t == null) tcs.TrySetCanceled();
+                        if (t == null) tcs.TrySetException(new ArgumentNullException("next", "Then(Func<T1, Task> nextTask) returned null. Not allowed"));
                         else
                             t.ContinueWith(delegate
                             {
@@ -305,7 +308,7 @@ namespace NAsync
                     try
                     {
                         Task<T2> t = next();
-                        if (t == null) tcs.TrySetCanceled();
+                        if (t == null) tcs.TrySetException(new ArgumentNullException("next", "Then(Func<Task<T2>> next) returned null. Not allowed"));
                         else
                             t.ContinueWith(delegate
                             {
@@ -355,7 +358,7 @@ namespace NAsync
                     try
                     {
                         Task<T2> t = next(first.Result);
-                        if (t == null) tcs.TrySetCanceled();
+                        if (t == null) tcs.TrySetException(new ArgumentNullException("next", "Then(Func<T1, Task<T2>> nextTask) returned null. Not allowed"));
                         else
                             t.ContinueWith(delegate
                             {
