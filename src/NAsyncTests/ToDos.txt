@@ -1,0 +1,5 @@
+﻿// TODO TEST : 
+// - WITH SPECIFIC SCHEDULER   (moq-able?)
+
+// TODO DEV
+// - MISSING MUTUALLY EXCLUSIVE CATCH: OrCatch<TException>(...)

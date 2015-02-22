@@ -45,8 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ArgumentNullExceptionTest.cs" />
     <Compile Include="SimpleTaskFactoryTest.cs" />
-    <Compile Include="TaskExtensionsTest.cs" />
+    <Compile Include="ThenDelegateTest.cs" />
+    <Compile Include="ThenTaskTest.cs" />
+    <Compile Include="CatchTest.cs" />
+    <Compile Include="FinallyTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -57,6 +61,9 @@
       <Project>{F3DC5FB8-BCFF-4D8A-BE76-E95758CB6E33}</Project>
       <Name>NAsync</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="ToDos.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
