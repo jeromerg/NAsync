@@ -49,7 +49,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -89,7 +89,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -129,7 +129,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -169,7 +169,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -215,7 +215,7 @@ namespace NAsync
                                 else if (t.IsCanceled) tcs.TrySetCanceled();
                                 else tcs.TrySetResult(null);
                             },
-                                taskScheduler ?? TaskScheduler.Default);
+                                taskScheduler ?? GetDefaultTaskScheduler());
                     }
                     catch (Exception exc)
                     {
@@ -223,7 +223,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -268,7 +268,7 @@ namespace NAsync
                                 else if (t.IsCanceled) tcs.TrySetCanceled();
                                 else tcs.TrySetResult(null);
                             },
-                                taskScheduler ?? TaskScheduler.Default);
+                                taskScheduler ?? GetDefaultTaskScheduler());
                     }
                     catch (Exception exc)
                     {
@@ -276,7 +276,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -318,7 +318,7 @@ namespace NAsync
                                 else if (t.IsCanceled) tcs.TrySetCanceled();
                                 else tcs.TrySetResult(t.Result);
                             },
-                                taskScheduler ?? TaskScheduler.Default);
+                                taskScheduler ?? GetDefaultTaskScheduler());
                     }
                     catch (Exception exc)
                     {
@@ -326,7 +326,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -368,7 +368,7 @@ namespace NAsync
                                 else if (t.IsCanceled) tcs.TrySetCanceled();
                                 else tcs.TrySetResult(t.Result);
                             },
-                                taskScheduler ?? TaskScheduler.Default);
+                                taskScheduler ?? GetDefaultTaskScheduler());
                     }
                     catch (Exception exc)
                     {
@@ -376,7 +376,7 @@ namespace NAsync
                     }
                 }
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -446,7 +446,7 @@ namespace NAsync
                 else if (first.IsCanceled) tcs.TrySetCanceled(); // forward
                 else tcs.SetResult(null); // forward
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -488,7 +488,7 @@ namespace NAsync
                 else if (first.IsCanceled) tcs.TrySetCanceled(); // forward
                 else tcs.TrySetResult(first.Result); // forward
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -525,7 +525,7 @@ namespace NAsync
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else tcs.TrySetResult(null);
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
@@ -558,10 +558,19 @@ namespace NAsync
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else tcs.TrySetResult(first.Result);
             },
-                taskScheduler ?? TaskScheduler.Default);
+                taskScheduler ?? GetDefaultTaskScheduler());
             return tcs.Task;
         }
 
         #endregion
+
+        private static TaskScheduler GetDefaultTaskScheduler()
+        {
+            SynchronizationContext curentSynchronizationContext = SynchronizationContext.Current;
+            if(curentSynchronizationContext == null)
+                return TaskScheduler.Default;
+            else
+                return TaskScheduler.FromCurrentSynchronizationContext();
+        }
     }
 }
