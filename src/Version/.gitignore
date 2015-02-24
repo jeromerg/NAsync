@@ -1,1 +1,3 @@
-/Generated
+/Generated/*
+!/Generated/readme.txt
+
