@@ -1,3 +1,7 @@
+Status:
+
+[![Build status](https://ci.appveyor.com/api/projects/status/4sfb5vb121qcktmi/branch/master?svg=true)](https://ci.appveyor.com/project/jeromerg/nasync/branch/master)
+
 NAsync
 ======
 
