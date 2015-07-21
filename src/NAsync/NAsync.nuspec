@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+  
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>http://github.com/jeromerg/NAsync/blob/master/LICENSE</licenseUrl>
+    <projectUrl>http://github.com/jeromerg/NAsync</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <!--<releaseNotes>Summary of changes made in this release of the package.</releaseNotes>-->
+    <copyright>Apache License Version 2.0</copyright>
+    <tags>Async Await Promise Deferred</tags>
+  </metadata>
+  
+  <files>
+    <file target='readme.txt' src='readme-for-nuget.txt' />
+  </files>
+  
+</package>
