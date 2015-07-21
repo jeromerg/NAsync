@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NAsync.JetBrains.Annotations;
@@ -29,12 +29,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -69,12 +71,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -109,12 +113,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -149,12 +155,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -193,12 +201,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -246,12 +256,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -296,12 +308,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -346,12 +360,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<T2>();
             first.ContinueWith(delegate
             {
+                if (cancellationToken.IsCancellationRequested) tcs.TrySetCanceled();
                 // ReSharper disable once PossibleNullReferenceException
-                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
                 else if (first.IsCanceled) tcs.TrySetCanceled();
                 else
                 {
@@ -416,12 +432,14 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
             {
                 if (first.IsFaulted)
                 {
+
                     // ReSharper disable once PossibleNullReferenceException
                     var concernedException = first.Exception.InnerException as TException;
                     if (concernedException == null)
@@ -458,6 +476,7 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<T1>();
             first.ContinueWith(delegate
@@ -494,6 +513,78 @@ namespace NAsync
 
         #endregion
 
+        #region OnCancelled
+
+        /// <summary> 
+        /// Allow to do some stuff if the first task has been cancelled.
+        /// Propagates the cancellation to the resulting task, or the exception of the callback if it threw an exception
+        /// </summary>
+        [NotNull]
+        public static Task OnCancelled([NotNull] this Task first,
+            [NotNull] Action next,
+            [CanBeNull] TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
+
+            var tcs = new TaskCompletionSource<object>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled)
+                {
+                    try
+                    {
+                        next();
+                        tcs.SetCanceled();
+                    }
+                    catch(Exception e)
+                    {
+                        tcs.TrySetException(e); 
+                    }
+                }
+                else tcs.SetResult(null); // forward
+            },
+                taskScheduler ?? GetDefaultTaskScheduler());
+            return tcs.Task;
+        }
+
+        [NotNull]
+        public static Task<T1> OnCancelled<T1>([NotNull] this Task<T1> first,
+            [NotNull] Action next,
+            [CanBeNull] TaskScheduler taskScheduler = null)
+        {
+            if (first == null) throw new ArgumentNullException("first");
+            if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
+
+            var tcs = new TaskCompletionSource<T1>();
+            first.ContinueWith(delegate
+            {
+                // ReSharper disable once PossibleNullReferenceException
+                if (first.IsFaulted) tcs.TrySetException(first.Exception.InnerExceptions);
+                else if (first.IsCanceled)
+                {
+                    try
+                    {
+                        next();
+                        tcs.SetCanceled();
+                    }
+                    catch(Exception e)
+                    {
+                        tcs.TrySetException(e); 
+                    }
+                }
+                else tcs.SetResult(first.Result); // forward
+            },
+                taskScheduler ?? GetDefaultTaskScheduler());
+            return tcs.Task;
+        }
+
+        #endregion
+
         #region Finally
 
         [NotNull]
@@ -503,6 +594,7 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<object>();
             first.ContinueWith(delegate
@@ -536,6 +628,7 @@ namespace NAsync
         {
             if (first == null) throw new ArgumentNullException("first");
             if (next == null) throw new ArgumentNullException("next");
+            TakeOverResponsabilityForUnobservedException(first);
 
             var tcs = new TaskCompletionSource<T1>();
             first.ContinueWith(delegate
@@ -572,5 +665,13 @@ namespace NAsync
             else
                 return TaskScheduler.FromCurrentSynchronizationContext();
         }
+    
+        private static void TakeOverResponsabilityForUnobservedException(Task first)
+        {
+            // take over the responsability for any unobserved exception
+            // ReSharper disable once PossibleNullReferenceException
+            if (first.Exception != null) first.Exception.Handle(e => true);
+        }
+
     }
 }
